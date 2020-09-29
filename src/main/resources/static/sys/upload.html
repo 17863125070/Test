@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>文件上传</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../public/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../public/plugins/bootstrap-table/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../public/plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/font/iconfont.css">
+    <link rel="stylesheet" href="../public/plugins/layui-2/css/layui.css">
+    <style>
+        .layui-input-inline {
+            width: 350px;
+        }
+
+        .layui-input {
+            height: 30px !important;
+        }
+    </style>
+</head>
+
+<style>
+    .icon {
+        width: 18px;
+        height: 18px;
+        vertical-align: -0.15em;
+        fill: currentColor;
+        overflow: hidden;
+    }
+</style>
+<body>
+
+<div id="app">
+    <div class="demoForm">
+        <form class="layui-form" action="">
+            <div class="layui-input-inline layui-form" style="margin-right: 25px;">
+                <select name="uploader" lay-verify="" lay-search lay-filter="userSelect" class="uploader">
+                    <option value="">请选择</option>
+                </select>
+            </div>
+            <!--<button id="search" type="button" data-type="reload" class="layui-btn layui-btn-sm"-->
+                    <!--lay-submit>-->
+                <!--查&nbsp;&nbsp;&nbsp;询-->
+            <!--</button>-->
+            <!--<button id="reset" type="button" class="layui-btn layui-btn-primary layui-btn-sm">-->
+                <!--重&nbsp;&nbsp;&nbsp;置-->
+            <!--</button>-->
+            <button type="button" class="layui-btn layui-btn-sm" data-toggle="modal" data-target="#uploadModel">上传文件
+            </button>
+        </form>
+    </div>
+
+    <table id="demo" lay-filter="test"></table>
+</div>
+
+<div class="modal fade" tabindex="-1" role="dialog" aria-labelledby="gridSystemModalLabel" id="uploadModel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span>
+                </button>
+                <h4 class="modal-title" id="gridSystemModalLabel">文件上传</h4>
+            </div>
+            <div class="modal-body">
+                <button type="button" class="layui-btn" id="test1">
+                    <i class="layui-icon">&#xe67c;</i>上传文件
+                </button>
+
+                <table class="layui-table">
+                    <thead>
+                    <tr>
+                        <th>文件名称</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="layui-btn layui-btn-primary layui-btn-sm" data-dismiss="modal">取消</button>
+                <button type="button" class="layui-btn layui-btn-sm" id="upload">上传</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div>
+<script src="../public/libs/jquery.min.js"></script>
+<script src="../public/plugins/layui-2/layui.js"></script>
+<script src="../public/plugins/layui-2/layui.all.js"></script>
+<script src="../public/libs/bootstrap.min.js"></script>
+<script src="../public/libs/vue.min.js"></script>
+<script src="../public/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../public/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="../public/plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../public/js/common.js"></script>
+<script src="../public/font/iconfont.js"></script>
+<script type="text/html" id="barDemo">
+    <a class="layui-btn layui-btn-xs" lay-event="edit">下载</a>
+    <a class="layui-btn layui-btn-xs" lay-event="delete">删除</a>
+</script>
+<script>
+    layui.use(['table', 'upload', 'layer','form'], function () {
+        var table = layui.table;
+        var upload = layui.upload;
+        var layer = layui.layer;
+        var form = layui.form;
+        //第一个实例
+        table.render({
+            elem: '#demo'
+            , height: 500
+            , url: '/listFile' //数据接口
+            , page: true //开启分页
+            , limits: [10, 20],
+            id: "uploadTable"
+            , cols: [[ //表头
+                {field: 'fileName', title: '文件名',}
+                , {field: 'operatorName', title: '上传人', width: 150,}
+                , {field: 'uploadTime', title: '上传时间', width: 200}
+                , {fixed: 'right', width: 150, align: 'center', title: '操作', toolbar: '#barDemo'} //这里的toolbar值是模板元素的选择器
+            ]]
+        });
+
+        table.on('tool(test)', function (obj) { //注：tool 是工具条事件名，test 是 table 原始容器的属性 lay-filter="对应的值"
+            var data = obj.data; //获得当前行数据
+            var fileName = data.fileName
+            console.log(fileName)
+            var layEvent = obj.event; //获得 lay-event 对应的值（也可以是表头的 event 参数对应的值）
+            var tr = obj.tr; //获得当前行 tr 的 DOM 对象（如果有的话）
+            var url="/fileDelete/" + fileName;
+            if (layEvent === 'edit') { //编辑
+                window.location.href = "/fileDownload/" + fileName;
+            }
+            if (layEvent === 'delete') { //编辑
+                var layer = layui.layer;
+                layer.msg('你确定删除么？', {
+                    time: 5000 ,//2秒自动关闭
+                    btn: ['确定', '取消'],
+                    yes: function(index){
+                        $.ajax({
+                            url:url,
+                            type:"Post",
+                            dataType:"json",
+                            success:function(data){
+                                location.reload(); //删除成功后再刷新
+                            },
+                            error:function(data){
+                                $.messager.alert('错误',data.msg);
+                            }
+                        });
+                        layer.close(index);
+                    }
+                });
+            }
+        });
+        form.on('select(userSelect)', function(data){
+            console.log(data.value); //得到被选中的值
+            table.reload('uploadTable',{
+                where:{
+                    operatorName:data.value
+                },
+                page:{
+                    curr:1
+                },
+                method: 'post',
+                contentType: "application/json;charset=utf-8",
+                url: '/listFileByFuzzy',
+            })
+        });
+        //执行实例
+        var uploadInst = upload.render({
+            elem: '#test1' //绑定元素
+            , url: '/batch' //上传接口
+            , accept: 'file'
+            , multiple: true
+            , auto: false //选择文件后不自动上传
+            , bindAction: '#upload' //指向一个按钮触发上传
+
+            , choose: function (obj) {
+                //将每次选择的文件追加到文件队列
+                var files = obj.pushFile();
+                //预读本地文件，如果是多文件，则会遍历。(不支持ie8/9)
+                obj.preview(function (index, file, result) {
+                   /* console.log(index); *///得到文件索引
+                    /*console.log(file);*/ //得到文件对象
+                    var trHTML = '<tr class = "frjlClass">' +
+                        '<td>' + file.name + '</td>' +
+                        '</tr>';
+                    $('tbody').append(trHTML);
+                });
+            }
+            , done: function (res) {
+                layer.msg(res.msg, {icon: 6});
+                $("#uploadModel").modal('hide');
+                table.reload('uploadTable', {
+                    url: '/listFile',
+                });
+                location.reload();
+            }
+            , error: function () {
+                //请求异常回调
+            }
+
+        });
+    });
+    $(function () {
+
+        //上传人(下拉框)
+        var url="../listUploader";
+        $.post(url, function (data) {
+            console.log(data[0]);
+            for (var k in data)
+            {
+                $(".uploader").append("<option value='" + data[k]+ "'>" + data[k] + "</option>");
+            }
+            layui.use('form', function () {
+                var form = layui.form;
+                form.render();
+            });
+        });
+    });
+</script>
+</body>
+</html>

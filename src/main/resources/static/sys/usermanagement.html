@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:v-bind="http://www.w3.org/1999/xhtml">
+<head>
+    <title>用户管理</title>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="../public/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../public/css/font-awesome.min.css">
+    <link rel="stylesheet" href="../public/plugins/bootstrap-table/bootstrap-table.min.css">
+    <link rel="stylesheet" href="../public/plugins/ztree/css/metroStyle/metroStyle.css">
+    <link rel="stylesheet" href="../public/css/main.css">
+    <link rel="stylesheet" href="../public/plugins/layui-2/css/layui.css">
+</head>
+<body>
+<div id="dtapp" v-cloak>
+
+    <div v-show="showList">
+        <div id="toolbar">
+            <button v-if="hasPermission('sys:user:save')" class="btn btn-success " type="button" @click="add">
+                <i class="fa fa-plus"></i>&nbsp;&nbsp;<span class="bold">新增</span>
+            </button>
+            <button v-if="hasPermission('sys:user:update')" class="btn btn-success " type="button" @click="update">
+                <i class="fa fa-pencil-square-o"></i>&nbsp;&nbsp;<span class="bold">修改</span>
+            </button>
+            <button v-if="hasPermission('sys:user:delete')" class="btn btn-danger " type="button" @click="del">
+                <i class="fa fa-remove"></i>&nbsp;&nbsp;<span class="bold">删除</span>
+            </button>
+            <button v-if="hasPermission('sys:user:resetpassword')" class="btn btn-warning " type="button" @click="reset">
+                <i class="fa fa-pencil-square-o"></i>&nbsp;&nbsp;<span class="bold">重置密码</span>
+            </button>
+            <button v-if="hasPermission('sys:user:resetpassword')" class="btn btn-info" type="button" @click="lookObj">
+                <i class="fa fa-flickr"></i>&nbsp;&nbsp;<span class="bold">所属对象配置</span>
+            </button>
+        </div>
+        <!--用户列表展示--->
+        <table id="table" ></table>
+    </div>
+
+    <!-- -->
+    <div v-show="!showList" class="panel panel-default">
+        <div class="panel-heading">{{title}}</div>
+        <form class="form-horizontal">
+            <div v-if="!isupdate" class="form-group">
+                <div  class="col-sm-2 control-label">账号 &nbsp;<span><font color="red">*</font></span></div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="user.userName" placeholder="用户登录账号（只能使用英文与数字的组合）" />
+                </div>
+            </div>
+            <div v-if="isupdate" class="form-group">
+                <div  class="col-sm-2 control-label">账号 &nbsp;<span><font color="red">*</font></span></div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="user.userName" placeholder="用户登录账号（只能使用英文与数字的组合）" disabled/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">中文名&nbsp;<span><font color="red">*</font></span></div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="user.cnName" placeholder="所属用户中文名"/>
+                </div>
+            </div>
+            <div v-if="!isupdate" class="form-group">
+                <div class="col-sm-2 control-label">密码&nbsp;<span><font color="red">*</font></span></div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="user.passWord" placeholder="密码（只能使用英文与数字的组合）"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label">角色&nbsp;<span><font color="red">*</font></span></div>
+                <div class="col-sm-10">
+                    <select class="form-control check-group" v-model="user.roleId">
+                        <option v-for="listRoles in listRoles" v-bind:value="listRoles.roleId">{{listRoles.roleName}}</option>
+                    </select>
+                </div>
+            </div>
+            <div  class="form-group">
+                <div class="col-sm-2 control-label">手机号</div>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" v-model="user.mobile" placeholder="手机号"/>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-sm-2 control-label"></div>
+                <input type="button" class="btn btn-primary" @click="saveOrUpdate" value="确定"/>
+                &nbsp;&nbsp;<input type="button" class="btn btn-warning" @click="reload" value="返回"/>
+            </div>
+        </form>
+    </div>
+
+</div>
+
+
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModalSearch" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <hr>
+                <div class="form-horizontal divtoptwo">
+                    <div id="test1" style="padding-bottom: 20px"></div>
+                    <hr>
+                    <div class="form-group" style="width: 100%;text-align: center">
+                        <input type="button" class="btn btn-mini btn-primary" onclick="sureObject()" value="确定"/>
+                        <input type="button" class="btn btn-mini btn-primary" onclick="Cancel()" value="返回"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 选择菜单 -->
+    <div id="menuLayer" style="display: none;padding:10px;">
+        <ul id="menuTree" class="ztree"></ul>
+    </div>
+</div>
+<script src="../public/libs/jquery.min.js"></script>
+<script src="../public/plugins/layui-2/layui.js"></script>
+<script src="../public/plugins/layui-2/layui.all.js"></script>
+<script src="../public/libs/bootstrap.min.js"></script>
+<script src="../public/libs/vue.min.js"></script>
+<script src="../public/plugins/bootstrap-table/bootstrap-table.min.js"></script>
+<script src="../public/plugins/bootstrap-table/locale/bootstrap-table-zh-CN.min.js"></script>
+<script src="../public/plugins/ztree/jquery.ztree.all.min.js"></script>
+<script src="../public/js/common.js"></script>
+<script src="../public/js/sys/user.js"></script>
+</body>
+</html>

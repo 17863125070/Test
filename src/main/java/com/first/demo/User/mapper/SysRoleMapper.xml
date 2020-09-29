@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.first.demo.User.mapper.SysRoleMapper">
+    <resultMap id="BaseResultMap" type="com.first.demo.User.entity.SysRole">
+        <result column="ROLE_NAME" property="roleName" jdbcType="VARCHAR"/>
+        <result column="ROLE_ID" property="roleId" jdbcType="INTEGER"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+
+        role_id, role_name, remark, create_user_id, create_time
+    </sql>
+    <!--查询所有权限-->
+    <select id="selectAllRole" resultMap="BaseResultMap">
+        SELECT ROLE_ID, ROLE_NAME, REMARK, CREATE_USER_ID, CREATE_TIME
+
+         FROM SYS_ROLE  ORDER BY ROLE_ID
+    </select>
+    <!--根据roleId查询所对应的用户-->
+    <select id="selectUserIdByroleId" resultType="java.lang.String" parameterType="java.lang.String">
+          SELECT  USER_ID FROM  SYS_USER_ROLE   WHERE ROLE_ID = #{roleId}
+    </select>
+    <!--添加权限-->
+    <insert id="saveRole" parameterType="com.first.demo.User.entity.SysRole">
+        insert into SYS_ROLE
+        (ROLE_ID,ROLE_NAME,REMARK,CREATE_USER_ID,CREATE_TIME)
+        values
+        (SYS_ROLE_SEQUENCE.nextval,#{sysRole.roleName,jdbcType=VARCHAR},#{sysRole.remark,jdbcType=VARCHAR},
+        #{sysRole.createUserId,jdbcType=VARCHAR},#{sysRole.createTime,jdbcType=VARCHAR})
+    </insert>
+    <!--修改权限-->
+    <update id="updateRole" parameterType="com.first.demo.User.entity.SysRole">
+        update sys_role
+        set  ROLE_NAME = #{sysRole.roleName,jdbcType=VARCHAR},
+             REMARK = #{sysRole.remark,jdbcType=VARCHAR},
+             CREATE_USER_ID=#{sysRole.createUserId,jdbcType=VARCHAR}
+        where ROLE_ID = #{sysRole.roleId,jdbcType=VARCHAR}
+
+    </update>
+    <!--删除权限-->
+    <delete id="deleteRole" parameterType="java.lang.String">
+
+      DELETE  FROM  SYS_ROLE WHERE ROLE_ID = #{roleId}
+
+    </delete>
+    <insert id="insertUserRole" parameterType="com.first.demo.User.entity.SysUserRole">
+        insert into SYS_USER_ROLE
+        (ID,USER_ID,ROLE_ID)
+        values
+        (SYS_USER_ROLE_SEQUENCE.nextval,#{sysUserRole.userId,jdbcType=VARCHAR},#{sysUserRole.roleId,jdbcType=VARCHAR})
+    </insert>
+    <update id="updateUserRole" parameterType="com.first.demo.User.dto.SysUserRoleDto">
+      update sys_user_role
+        set  ROLE_ID = #{sysUserRoleDto.roleId,jdbcType=VARCHAR}
+        where USER_ID = #{sysUserRoleDto.userId,jdbcType=VARCHAR}
+    </update>
+    <delete id="delUserRole" parameterType="string">
+        delete from sys_user_role where user_id=#{userId,jdbcType=VARCHAR}
+    </delete>
+    <select id="findRolesByUserId" resultType="java.lang.String" parameterType="integer">
+       select r.role_name
+         from sys_role r
+         inner join sys_user_role ur
+         on r.role_id = ur.role_id
+       where ur.user_id = #{userId}
+    </select>
+    <select id="listRoles" resultMap="BaseResultMap">
+      select ROLE_ID,ROLE_NAME from SYS_ROLE
+  </select>
+    <select id="findRolesByUserIds" resultType="com.first.demo.User.entity.SysRole" parameterType="java.lang.String">
+        select r.role_name,r.role_id
+         from sys_role r
+         inner join sys_user_role ur
+         on r.role_id = ur.role_id
+       where ur.user_id = #{userId}
+    </select>
+</mapper>
